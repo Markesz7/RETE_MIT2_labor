@@ -1,6 +1,8 @@
 package hu.bme.mit.yakindu.analysis.workhere;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -27,6 +29,7 @@ public class Main {
 		EObject root = manager.loadModel("model_input/example.sct");
 		
 		// Reading model
+		List<String> trappedStateNames = new ArrayList<String>();
 		Statechart s = (Statechart) root;
 		TreeIterator<EObject> iterator = s.eAllContents();
 		while (iterator.hasNext()) {
@@ -34,6 +37,9 @@ public class Main {
 			if(content instanceof State) {
 				State state = (State) content;
 				System.out.println(state.getName());
+				if(state.getOutgoingTransitions().isEmpty())
+					trappedStateNames.add(state.getName());
+					
 			}
 			else if(content instanceof Transition)
 			{
@@ -41,6 +47,11 @@ public class Main {
 				System.out.println(tr.getSource().getName() + " -> " + tr.getTarget().getName());
 			}
 		}
+		
+		System.out.print("Trapped state names: ");
+		for(int i = 0; i < trappedStateNames.size(); i++)
+			System.out.print(trappedStateNames.get(i) + " ");
+		System.out.println();
 		
 		// Transforming the model into a graph representation
 		String content = model2gml.transform(root);
