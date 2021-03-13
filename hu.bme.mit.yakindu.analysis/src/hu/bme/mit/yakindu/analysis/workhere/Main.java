@@ -1,5 +1,7 @@
 package hu.bme.mit.yakindu.analysis.workhere;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -18,7 +20,7 @@ import hu.bme.mit.yakindu.analysis.modelmanager.ModelManager;
 
 public class Main {
 	@Test
-	public void test() {
+	public void test() throws IOException {
 		main(new String[0]);
 	}
 	
@@ -43,7 +45,7 @@ public class Main {
 		}
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		System.out.println("Task 2.3:\n");
 		ModelManager manager = new ModelManager();
@@ -168,6 +170,7 @@ public class Main {
 						   "				print(s);	\r\n" + 
 						   "			}\r\n" + 
 						   "		}\r\n" + 
+						   "		br.close();\r\n" + 						   
 						   "		System.exit(0);\r\n" + 
 						   "	}\r\n");		
 		
@@ -181,6 +184,77 @@ public class Main {
 							  +"());");
 		}
 		System.out.println("\t}\r\n}");
+		
+		System.out.println("\nTask 4.8:\n");
+		System.out.println("Generating code...");
+
+		FileWriter myWriter = new FileWriter("NewGeneratedCode.java");
+		myWriter.write("package hu.bme.mit.yakindu.analysis.workhere;\r\n" + 
+				"\r\n" + 
+				"import java.io.BufferedReader;\r\n" + 
+				"import java.io.IOException;\r\n" + 
+				"import java.io.InputStreamReader;\r\n" + 
+				"\r\n" + 
+				"import hu.bme.mit.yakindu.analysis.RuntimeService;\r\n" + 
+				"import hu.bme.mit.yakindu.analysis.TimerService;\r\n" + 
+				"import hu.bme.mit.yakindu.analysis.example.ExampleStatemachine;\r\n" + 
+				"import hu.bme.mit.yakindu.analysis.example.IExampleStatemachine;\r\n" + 
+				"\r\n" + 
+				"\r\n" + 
+				"\r\n" + 
+				"public class NewGeneratedCode {\r\n" + 
+				"	\r\n" + 
+				"	public static void main(String[] args) throws IOException {\r\n" + 
+				"		ExampleStatemachine s = new ExampleStatemachine();\r\n" + 
+				"		s.setTimer(new TimerService());\r\n" + 
+				"		RuntimeService.getInstance().registerStatemachine(s, 200);\r\n" + 
+				"		s.init();\r\n" + 
+				"		s.enter();\r\n" + 
+				"		s.runCycle();\r\n" + 
+				"		boolean exit = false;\r\n" + 
+				"		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\r\n" + 
+				"		while(!exit)\r\n" + 
+				"		{\r\n" + 
+				"			switch(br.readLine())\r\n" + 
+				"			{\r\n");
+		
+		for(int i = 0; i < events.size(); i++)
+		{
+			myWriter.write("			case \"" + events.get(i).getName() + "\":\r\n" + 
+						   "				s.raise" + (events.get(i).getName().substring(0, 1).toUpperCase() + events.get(i).getName().substring(1)) +"();\r\n" + 
+						   "				break;\r\n\n");
+		}
+
+		myWriter.write    ("			case \"exit\":\r\n" + 
+						   "				exit = true;\r\n" + 
+						   "				break;\r\n" + 
+						   "				\r\n" + 
+						   "			default:\r\n" + 
+						   "				System.out.println(\"Unknown command!\");\r\n" + 
+						   "				break;\r\n" + 
+						   "			}\r\n" + 
+						   "			if(!exit)\r\n" + 
+						   "			{\r\n" + 
+						   "				s.runCycle();\r\n" + 
+						   "				print(s);	\r\n" + 
+						   "			}\r\n" + 
+						   "		}\r\n" + 
+						   "		br.close();\r\n" + 								   
+						   "		System.exit(0);\r\n" + 
+						   "	}\r\n");		
+		
+		myWriter.write("\tpublic static void print(IExampleStatemachine s) {\r\n");
+		for(int i = 0; i < variables.size(); i++)
+		{
+			myWriter.write   ("\t\tSystem.out.println(\"" 
+							  + variables.get(i).getName().substring(0, 1).toUpperCase() 
+							  + " = \" + s.getSCInterface().get"
+							  + (variables.get(i).getName().substring(0, 1).toUpperCase() + variables.get(i).getName().substring(1))
+							  +"());\r\n");
+		}
+		myWriter.write("\t}\r\n}");
+		System.out.println("Code successfully generated!");
+		myWriter.close();
 		
 		// Transforming the model into a graph representation
 		String content = model2gml.transform(root);
